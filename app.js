@@ -1,12 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const methodOverride = require('method-override');
 var app = express();
 
 // APP CONFIG
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
 
 
 //MONGOOSE CONFIG
@@ -80,6 +82,31 @@ app.get("/blogs/:id", function(req, res) {
   });
 });
 
+//EDIT route
+app.get("/blogs/:id/edit", function(req, res) {
+  // Find the blog that will be edited
+  Blog.findById(req.params.id, function(err, returnedBlog) {
+    if (err) {
+      res.redirect("/blogs");
+      console.log(err);
+    } else {
+
+      // Render edit form
+      res.render("edit", {blog: returnedBlog});
+    }
+  });
+});
+
+//UPDATE ROUTES
+app.put("/blogs/:id", function(req, res) {
+  Blog.findByIdAndUpdate(req.params.id, req.body.blog, function(err, updatedBlog) {
+    if (err) {
+      res.redirect("/blogs/" + req.params.id + "/edit");
+    } else {
+      res.redirect("/blogs/" + req.params.id);
+    }
+  });
+});
 
 
 app.listen(process.env.PORT || 3000, function() {
