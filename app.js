@@ -108,6 +108,18 @@ app.put("/blogs/:id", function(req, res) {
   });
 });
 
+// DELETE route
+app.delete("/blogs/:id", function(req, res) {
+  //Destroy Blog
+  Blog.findByIdAndRemove(req.params.id, function(err) {
+    if (err) {
+      console.log(err);
+      res.redirect("/blogs/" + req.params.id);
+    } else {
+      res.redirect("/blogs");
+    }
+  });
+});
 
 app.listen(process.env.PORT || 3000, function() {
   console.log("Listening to server");
