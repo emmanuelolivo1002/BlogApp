@@ -2,12 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
+const expressSanitizer = require('express-sanitizer');
 var app = express();
 
 // APP CONFIG
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(expressSanitizer());
 app.use(methodOverride("_method"));
 
 
@@ -24,14 +26,6 @@ var blogSchema = new mongoose.Schema({
 });
 // Create model
 var Blog = mongoose.model("Blog", blogSchema);
-
-//Test created
-// Blog.create({
-//   title: "Test blog",
-//   image: "http://img.dunyanews.tv/news/2017/July/07-06-17/news_big_images/395838_93202731.jpg",
-//   body: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-// });
-
 
 
 // RESTFUL ROUTES
@@ -59,6 +53,10 @@ app.get("/blogs/new", function(req, res) {
 
 //CREATE route
 app.post("/blogs", function(req, res) {
+
+  // Sanitize blog.body
+  req.body.blog.body = req.sanitize(req.body.blog.body);
+
   //create blog
   Blog.create(req.body.blog, function(err, newBlog) {
     if (err) {
@@ -99,6 +97,10 @@ app.get("/blogs/:id/edit", function(req, res) {
 
 //UPDATE ROUTES
 app.put("/blogs/:id", function(req, res) {
+
+  // Sanitize blog.body
+  req.body.blog.body = req.sanitize(req.body.blog.body);
+
   Blog.findByIdAndUpdate(req.params.id, req.body.blog, function(err, updatedBlog) {
     if (err) {
       res.redirect("/blogs/" + req.params.id + "/edit");
